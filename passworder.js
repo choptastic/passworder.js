@@ -79,10 +79,7 @@ var passworder = {
 	{
 		this.add_history("----------------------------------");
 		if(typeof attemptsleft == "undefined")
-		{
 			attemptsleft = length*2;
-			this.clear_history();
-		}
 
 		if(length>49)
 			return "Please keep password length under 50";
@@ -128,7 +125,11 @@ var passworder = {
 		var base = specialchars ? 78 : 62; //62 = alphanumeric only, 78 = add special chars
 
 		
+		this.clear_history();
+
 		var interleaved = this.interleave_salt_and_pw(salt,password);
+		
+		this.add_history("Interleaved: " + interleaved);
 		var numberized = this.convert_to_number(interleaved);
 		var finalpw = this.calculate_pass(numberized,base,length);
 
@@ -139,6 +140,8 @@ var passworder = {
 	{
 		var retstr = "";
 		var max = Math.max(salt.length,pw.length);
+
+
 		var i;
 		for(i=0;i<max;i++)
 			retstr += this.ith_char(i,salt) + this.ith_char(i,pw);
@@ -147,9 +150,13 @@ var passworder = {
 
 	ith_char: function(i,str)
 	{
+		var timespast = 0;
 		if(i>=str.length)
+		{
+			timespast = Math.floor(i/str.length);
 			i %= str.length;
-		return str.charAt(i);
+		}
+		return String.fromCharCode((str.charCodeAt(i)+timespast - 32)%224 + 32);
 	},
 
 	convert_to_number: function(s)
@@ -245,10 +252,12 @@ var passworder = {
 			this.tr(
 				this.td("<div class=pw_result style='text-align:center'>Generated Password:<br /><span id=\"finalpw\" style='font-size:24pt;font-weight:bold;font-family:monospace'>Nothing Yet</span>",2)
 			)
-			/*+ tr(
-				td(label("Result History:","Can be ignored")) +
-				td("<div id='history' style='height:200px;overflow:auto;font-family:monospace'></span>")
-			)*/
+			/*
+			+ this.tr(
+				this.td(this.label("Result History:","Can be ignored")) +
+				this.td("<div id='history' style='height:200px;overflow:auto;font-family:monospace'></span>")
+			)
+			//*/
 		));
 
 	}

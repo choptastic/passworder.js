@@ -67,21 +67,24 @@ function checkbox(id,onchange)
 
 function clear_history()
 {
-	dge("history").innerHTML = "";
+	if(dge("history"))
+		dge("history").innerHTML = "";
 }
 
 function add_history(v)
 {
-	dge("history").innerHTML += v + "<br />";
+	if(dge("history"))
+		dge("history").innerHTML += v + "<br />";
 }
 
 function calculate_pass(interleaved,base,length,attemptsleft)
 {
+	add_history("----------------------------------");
 	if(typeof attemptsleft == "undefined")
-		attemptsleft = 10;
-
-	if(attemptsleft==10)
+	{
+		attemptsleft = 5+length;
 		clear_history();
+	}
 
 	if(isNaN(length))
 		return "";
@@ -91,13 +94,10 @@ function calculate_pass(interleaved,base,length,attemptsleft)
 	if(length<1)
 		return "";
 
-
-	//alert(length);
-	
 	var numberized = convert_to_number(interleaved);
 	var result = to_base(base,numberized);
 
-	add_history(numberized + ": " + result);
+	add_history("Pass " + attemptsleft + " - " + interleaved + " = " + numberized + " --> " + result);
 
 	if(interleaved == "")
 		return "";
@@ -105,12 +105,12 @@ function calculate_pass(interleaved,base,length,attemptsleft)
 		return "Something Went Wrong";
 	else if(result.length < length)
 	{
-		//alert("Too short:" + result + "attemptsleft: " + attemptsleft);
-		return calculate_pass(interleaved + interleaved,base,length,attemptsleft-1);
+		add_history("Too short:" + result.length + " < " + length);
+		return calculate_pass(interleaved + interleaved,base,length,attemptsleft);
 	}
 	else if(result.length > length)
 	{
-		//alert("Too long:" + result + "attmptsleft: " + attemptsleft);
+		add_history("Too Long:" + result.length + " > " + length);
 		if(attemptsleft > 0)
 			return calculate_pass(combine_every_other(interleaved),base,length,attemptsleft-1);
 		else
@@ -255,14 +255,14 @@ function print_form()
 	fun = "passworder_calc_pass()";
 	w(table(
 		tr(
-			td("<b>passworder.js</b> - Password Generator<br /><a href='http://github.com/choptastic/passworder.js' target=_new>http://github.com/choptastic/passworder.js</a>",2)
+			td("<div class=pw_title><b>passworder.js</b> - Password Generator<br /><a href='http://github.com/choptastic/passworder.js' target=_new>http://github.com/choptastic/passworder.js</a></div>",2)
 		) +
 		tr(
-			td(label("Salt:","A word, phrase, or other string of charcters that you can easily remember.  This will be the, in a sense, 'the password to your passwords'")) +
+			td(label("Salt:","A word, phrase, or other string of charcters that you can easily remember. <br />This will be the, in a sense, \"the password to your passwords\"")) +
 			td(input("salt",fun))
 		) +
 		tr(
-			td(label("Password:","This is the actual password you wish to use.  This would be a variable thing.  Should only use this password in one place, to be safe.")) +
+			td(label("Password:","This is the actual password you wish to use.  You should only<br />use this password in one place, to be safe.")) +
 			td(input("password",fun))
 		) +
 		tr(
@@ -274,13 +274,12 @@ function print_form()
 			td(checkbox("specialchars",fun))
 		) +
 		tr(
-			td(label("Generated Password:","This is the final password to enter into password fields on webpages and programs.")) +
-			td("<span id=\"finalpw\" style='font-size:larger;font-weight:bold;font-family:monospace'></span>")
+			td("<div class=pw_result style='text-align:center'>Generated Password:<br /><span id=\"finalpw\" style='font-size:24pt;font-weight:bold;font-family:monospace'>Nothing Yet</span>",2)
 		)
 		+ tr(
 			td(label("Result History:","Can be ignored")) +
 			td("<span id='history' style='font-family:monospace'></span>")
-		)
+	  	)
 	));
 
 }

@@ -22,7 +22,9 @@
  * THE SOFTWARE. */
 
 var passworder = {
-	version: "0.1",
+	version: "0.2",
+	trainer_correct: 0,
+	max_attempts: 40,
 	dge : function(e)
 	{
 		return document.getElementById(e);
@@ -44,7 +46,7 @@ var passworder = {
 
 	tr: function(body)
 	{
-		return "<tr>" + body + "</tr";
+		return "<tr>" + body + "</tr>";
 	},
 
 	td: function(body,colspan)
@@ -52,6 +54,10 @@ var passworder = {
 		if(typeof colspan=="undefined")
 			colspan=1;
 		return "<td colspan=" + colspan + ">" + body + "</td>";
+	},
+	link: function(id,text,url)
+	{
+		return "<a href=\"" + url + "\" id=\"" + id + "\">" + text + "</a>";
 	},
 	input: function(id,onchange,def)
 	{
@@ -226,6 +232,33 @@ var passworder = {
 			}
 		}
 	},
+	reset_train_count: function()
+	{
+		this.trainer_correct = 0;
+		this.dge("pw_left").innerHTML = this.max_attempts;
+	},
+	train_verify: function(pw)
+	{
+		real_password = this.dge("finalpw").innerHTML;
+		if(real_password==pw)
+		{
+			this.trainer_correct++;
+			this.dge("pw_left").innerHTML = this.max_attempts - this.trainer_correct;
+			if(this.trainer_correct == this.max_attempts)
+			{
+				alert("Congratulations! You now know the new password");
+				this.reset_train_count();
+			}
+			this.dge("train_input").value="";
+		}
+	},
+	start_training: function()
+	{
+		this.dge("pw_trainer").innerHTML = "Enter the password above. As soon as you have the<br />correct password, it'll clear and you'll enter it again.<br />" +
+						this.input("train_input","passworder.train_verify(this.value)") +
+						"<br />Times Left: <span id=pw_left>" + this.max_attempts + "</span>";
+						
+	},
 	print_form: function()
 	{
 		fun = "passworder.passworder_calc_pass()";
@@ -251,6 +284,9 @@ var passworder = {
 			) +
 			this.tr(
 				this.td("<div class=pw_result style='text-align:center'>Generated Password:<br /><span id=\"finalpw\" style='font-size:24pt;font-weight:bold;font-family:monospace'>Nothing Yet</span>",2)
+			) +
+			this.tr(
+				this.td("<div style='text-align:center'>" + this.link("pw_trainer_link","Train this password","javascript:passworder.start_training()") + "<div id=pw_trainer></div></div>")
 			)
 			/*
 			+ this.tr(
